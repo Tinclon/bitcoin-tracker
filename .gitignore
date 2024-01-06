@@ -1,0 +1,9 @@
+# Statements
+statements/
+
+# Dependency directories
+node_modules/
+
+# Idea
+.idea/
+*.iml
