@@ -3,25 +3,30 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 
+import wallets from "./wallets/wallets.js"
+// Wallets are of this form:
+// export default {
+//     "A": {
+//         "addresses": [
+//             "bc1q6xhy3rn09hkrqhzlxqgc40cetutes530axtvda",
+//             "bc1q8cnuhluv6sa3fr9h7k0htfqmyctdsl8xwmnfa2",
+//             "bc1qgk4l74uef9aayc3rt69gh2gj4sf8grafmpcvxw",
+//             "bc1q0vmp5a4alp0dz287wrgz9uspwdt398hhxpr8ua",
+//             "bc1qcxfk4g3mcgs0hvh4qazw24ykvtv4fq6teqmq5p",
+//             "bc1qz8wv4a35l6wpk69wuwgcwzgayeyr4t7lx7vaqx",
+//             "bc1qyuyc6yvtpfex3t4whgzrw6lcfxfe8625t43a3z",
+//         ]
+//     },
+
 (async () => {
-    const wallets = {
-        "Satoshi": {
-            "addresses": [
-                "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-                "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S",
-                "12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX",
-                "1HLoD9E4SDFFPDiYfNYnkBLQ85Y51J3Zb1",
-                "1FvzCLoTPGANNjWoUo6jUGuAG3wg1w4YjR",
-                "15ubicBBWFnvoZLT7GiU2qxjRaKJPdkDMG",
-                "1JfbZRwdDHKZmuiZgYArJZhcuuzuw2HuMu",
-                "1GkQmKAmHtNfnD3LHhTkewJxKHVSta4m2a",
-                "16LoW7y83wtawMg5XmT4M3Q7EdjjUmenjM",
-                "1J6PYEzr4CUoGbnXrELyHszoTSz3wCsCaj",
-            ],
-        },
-    };
 
     const delay = (delay_ms) => new Promise((_) => setTimeout(_, delay_ms));
+
+    let numAddresses = 0;
+    let fetchedAddresses = 0;
+    for (const wallet in wallets) {
+        numAddresses += wallets[wallet].addresses.length;
+    }
 
     for (const wallet in wallets) {
         const promises = wallets[wallet].addresses.map(address =>
@@ -29,8 +34,10 @@ import fetch from 'node-fetch';
                 .then(response => {
                     if (response.status !== 200) {
                         console.error(response.status);
+                        ++fetchedAddresses;
                         return {chain_stats: {funded_txo_sum: 0, spent_txo_sum: 0}};
                     }
+                    console.error(`Retrieved ${++fetchedAddresses} of ${numAddresses}`);
                     return response.json()
                 })
                 .then(json => json.chain_stats.funded_txo_sum - json.chain_stats.spent_txo_sum)
