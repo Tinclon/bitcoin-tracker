@@ -20,8 +20,8 @@ import wallets from "./wallets/wallets.js"
 
 (async () => {
 
-    const delayPromise = (delay_ms) => new Promise(_ => setTimeout(_, delay_ms));
-    const delayFunction = (delay_ms) => value => new Promise(resolve => setTimeout(() => resolve(value), delay_ms));
+    const delayPromise = delay_ms => new Promise(_ => setTimeout(_, delay_ms));
+    const delayFunction = delay_ms => _ => new Promise(_ => setTimeout(_, delay_ms));
 
     let numAddresses = 0;
     let fetchedAddresses = 0;
@@ -43,7 +43,11 @@ import wallets from "./wallets/wallets.js"
                         return response.json()
                     })
                     .then(json => json.chain_stats.funded_txo_sum - json.chain_stats.spent_txo_sum)
-                    .then(balance => balance / 100000000)));
+                    .then(balance => balance / 100000000)
+                    .catch(() => {
+                        console.error(`Exception on ${++fetchedAddresses} of ${numAddresses} for ${address}. Check at https://blockstream.info/api/address/${address}`);
+                        return 0; }
+                    )));
 
         wallets[wallet].total = (await Promise.all(promises)).reduce((acc, cur) => acc + cur, 0)
 
